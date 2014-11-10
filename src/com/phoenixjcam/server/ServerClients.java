@@ -33,7 +33,7 @@ public class ServerClients extends Thread
 	{
 		int maxClientsCount = this.maxClientsCount;
 		ServerClients[] clients = this.serverClients;
-		String name = null;
+		this.clientName = null;
 
 		try
 		{
@@ -43,37 +43,40 @@ public class ServerClients extends Thread
 
 			try
 			{
-				// wait for name
+				// wait for name / nick - A, B at the beginning 
 				while (true)
 				{
 
-					objectOutputStream.writeObject("Enter name");
-					name = objectInputStream.readObject().toString();
+					objectOutputStream.writeObject("Type your nick:");
+					clientName = objectInputStream.readObject().toString();
 					break;
 				}
 
 				// welcome new user
-				objectOutputStream.writeObject("Welcome " + name + " in our chat room");
-				serverGUI.getTextArea().append("new user - " + name + Utils.NEWLINE); // update server frame
+				objectOutputStream.writeObject("Welcome " + clientName + " in game - Jumper3 ");
+
+				Utils.printServerMsg("new user - " + clientName, serverGUI);
+
+				// serverGUI.getTextArea().append("new user - " + name + Utils.NEWLINE); // update server frame
 
 				synchronized (this)
 				{
-					// update client name
-					for (int i = 0; i < maxClientsCount; i++)
-					{
-						if (this.serverClients[i] != null && this.serverClients[i] == this)
-						{
-							clientName = "@" + name;
-							break;
-						}
-					}
+//					// update client name
+//					for (int i = 0; i < maxClientsCount; i++)
+//					{
+//						if (this.serverClients[i] != null && this.serverClients[i] == this)
+//						{
+//							clientName = "@" + clientName;
+//							break;
+//						}
+//					}
 
 					// send to each of client update about new user
 					for (int i = 0; i < maxClientsCount; i++)
 					{
 						if (this.serverClients[i] != null && this.serverClients[i] != this)
 						{
-							this.serverClients[i].objectOutputStream.writeObject("A new user " + name + " entered the chat room");
+							this.serverClients[i].objectOutputStream.writeObject("A new player " + clientName + " entered the game");
 						}
 					}
 				}
@@ -100,13 +103,17 @@ public class ServerClients extends Thread
 						{
 							if (this.serverClients[i] != null && this.serverClients[i].clientName != null)
 							{
-								this.serverClients[i].objectOutputStream.writeObject("<" + name + "> " + clientMsg);
-								serverGUI.getTextArea().append(name + ": " + clientMsg + Utils.NEWLINE); // update
+								this.serverClients[i].objectOutputStream.writeObject("<" + clientName + "> " + clientMsg);
+								Utils.printServerMsg(clientName + ": " + clientMsg, serverGUI);
+								
+								//serverGUI.getTextArea().append(name + ": " + clientMsg + Utils.NEWLINE); // update
 																											// server
 																											// frame
 							}
 						}
-						serverGUI.getTextArea().append("--------------------------------------------" + Utils.NEWLINE);
+						Utils.printServerMsg("--------------------------------------------" , serverGUI);
+						
+						//serverGUI.getTextArea().append("--------------------------------------------" + Utils.NEWLINE);
 					}
 				}
 				// in case if user close window without saying BYE || END
@@ -125,7 +132,7 @@ public class ServerClients extends Thread
 				{
 					if (this.serverClients[i] != null && this.serverClients[i] != this && this.serverClients[i].clientName != null)
 					{
-						String preparedMsg = "The user " + name + " is leaving the chat room";
+						String preparedMsg = "The user " + clientName + " is leaving the chat room";
 						this.serverClients[i].objectOutputStream.writeObject(preparedMsg);
 					}
 				}
@@ -160,6 +167,11 @@ public class ServerClients extends Thread
 			closeSocket();
 		}
 
+	}
+	
+	private void broadcastMessage()
+	{
+		
 	}
 
 	private void shutdownStreams()
