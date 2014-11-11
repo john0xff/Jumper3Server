@@ -1,10 +1,13 @@
 package com.phoenixjcam.server;
 
+import java.awt.Point;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+
+import com.phoenixjcam.net.envelope.PlayerEnvelope;
 
 public class ServerClients extends Thread
 {
@@ -43,7 +46,7 @@ public class ServerClients extends Thread
 
 			try
 			{
-				// wait for name / nick - A, B at the beginning 
+				// wait for name / nick - A, B at the beginning
 				while (true)
 				{
 
@@ -61,25 +64,38 @@ public class ServerClients extends Thread
 
 				synchronized (this)
 				{
-//					// update client name
+					// // update client name
+					// for (int i = 0; i < maxClientsCount; i++)
+					// {
+					// if (this.serverClients[i] != null && this.serverClients[i] == this)
+					// {
+					// clientName = "@" + clientName;
+					// break;
+					// }
+					// }
+
+					// inform others clients that new one came in
 //					for (int i = 0; i < maxClientsCount; i++)
 //					{
-//						if (this.serverClients[i] != null && this.serverClients[i] == this)
+//						
+//						if (this.serverClients[i] != null && this.serverClients[i] != this)
 //						{
-//							clientName = "@" + clientName;
-//							break;
+//							this.serverClients[i].objectOutputStream.writeObject("A new player " + clientName);
+//							Utils.printServerMsg("A new player " + clientName, serverGUI);
 //						}
 //					}
-
-					// send to each of client update about new user
-					for (int i = 0; i < maxClientsCount; i++)
-					{
-						if (this.serverClients[i] != null && this.serverClients[i] != this)
-						{
-							this.serverClients[i].objectOutputStream.writeObject("A new player " + clientName + " entered the game");
-						}
-					}
+					
+//					// inform this client about others
+//					for (int i = 0; i < maxClientsCount; i++)
+//					{
+//						if (this.serverClients[i] == this)
+//						{
+//							this.serverClients[i].objectOutputStream.writeObject("Already in game " + clientName);
+//							Utils.printServerMsg(clientName + ": " + clientName, serverGUI);
+//						}
+//					}
 				}
+
 			}
 			catch (SocketException e)
 			{
@@ -91,29 +107,30 @@ public class ServerClients extends Thread
 			{
 				try
 				{
-					String clientMsg = objectInputStream.readObject().toString();
+					// String clientMsg = objectInputStream.readObject().toString();
+					
+					PlayerEnvelope playerEnvelope = (PlayerEnvelope) objectInputStream.readObject();
 
 					// break this loop and end of life of this thread
-					if (clientMsg.contains("END"))
-						break;
+//					if (clientMsg.contains("END"))
+//						break;
 
 					synchronized (this)
 					{
 						for (int i = 0; i < maxClientsCount; i++)
 						{
-							if (this.serverClients[i] != null && this.serverClients[i].clientName != null)
+							if (this.serverClients[i] != null && this.serverClients[i].clientName != null && this.serverClients[i] != this)
 							{
-								this.serverClients[i].objectOutputStream.writeObject("<" + clientName + "> " + clientMsg);
-								Utils.printServerMsg(clientName + ": " + clientMsg, serverGUI);
+								//PlayerEnvelope playerEnvelope = new PlayerEnvelope(clientName, new Point(300, 300));
+								this.serverClients[i].objectOutputStream.writeObject(playerEnvelope);
 								
-								//serverGUI.getTextArea().append(name + ": " + clientMsg + Utils.NEWLINE); // update
-																											// server
-																											// frame
+								serverGUI.getTextArea().append(playerEnvelope.getName() + "  " + playerEnvelope.getPosition().x + " " +  playerEnvelope.getPosition().y);
+								//Utils.printServerMsg(clientName + ": " + playerEnvelope.getName(), serverGUI);
+
 							}
 						}
-						Utils.printServerMsg("--------------------------------------------" , serverGUI);
-						
-						//serverGUI.getTextArea().append("--------------------------------------------" + Utils.NEWLINE);
+						Utils.printServerMsg("--------------------------------------------", serverGUI);
+
 					}
 				}
 				// in case if user close window without saying BYE || END
@@ -168,10 +185,10 @@ public class ServerClients extends Thread
 		}
 
 	}
-	
+
 	private void broadcastMessage()
 	{
-		
+
 	}
 
 	private void shutdownStreams()
