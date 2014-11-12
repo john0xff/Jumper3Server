@@ -50,7 +50,7 @@ public class ServerClients extends Thread
 				while (true)
 				{
 
-					objectOutputStream.writeObject("Type your nick:");
+					//objectOutputStream.writeObject("Type your nick:");
 					clientName = objectInputStream.readObject().toString();
 					break;
 				}
@@ -124,12 +124,12 @@ public class ServerClients extends Thread
 								//PlayerEnvelope playerEnvelope = new PlayerEnvelope(clientName, new Point(300, 300));
 								this.serverClients[i].objectOutputStream.writeObject(playerEnvelope);
 								
-								serverGUI.getTextArea().append(playerEnvelope.getName() + "  " + playerEnvelope.getPosition().x + " " +  playerEnvelope.getPosition().y);
+								//serverGUI.getTextArea().append(playerEnvelope.getName() + "  " + playerEnvelope.getPosition().x + " " +  playerEnvelope.getPosition().y);
 								//Utils.printServerMsg(clientName + ": " + playerEnvelope.getName(), serverGUI);
 
 							}
 						}
-						Utils.printServerMsg("--------------------------------------------", serverGUI);
+						// Utils.printServerMsg("--------------------------------------------", serverGUI);
 
 					}
 				}
